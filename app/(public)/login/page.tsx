@@ -1,8 +1,10 @@
+import { Suspense } from "react";
 import Link from "next/link";
 
 import { GoogleButton } from "@/components/auth/google-button";
 import { LoginForm } from "@/components/auth/login-form";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LoginPage() {
   return (
@@ -23,7 +25,9 @@ export default function LoginPage() {
           <Separator className="flex-1" />
         </div>
 
-        <LoginForm />
+        <Suspense fallback={<LoginFormFallback />}>
+          <LoginForm />
+        </Suspense>
       </div>
 
       <p className="pt-6 text-sm text-muted-foreground">
@@ -35,6 +39,16 @@ export default function LoginPage() {
           Criar conta
         </Link>
       </p>
+    </div>
+  );
+}
+
+function LoginFormFallback() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-16 w-full" />
+      <Skeleton className="h-16 w-full" />
+      <Skeleton className="h-10 w-full" />
     </div>
   );
 }
