@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod/v3";
@@ -17,6 +17,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+import { safeNext } from "@/lib/auth/safe-redirect";
 import { createClient } from "@/lib/supabase/client";
 
 const schema = z.object({
@@ -28,11 +30,22 @@ type Schema = z.infer<typeof schema>;
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [pending, setPending] = useState(false);
   const form = useForm<Schema>({
     resolver: zodResolver(schema),
     defaultValues: { email: "", password: "" },
   });
+
+  const surfacedError = useRef(false);
+  useEffect(() => {
+    if (surfacedError.current) return;
+    const err = searchParams.get("error");
+    if (err === "oauth") {
+      toast.error("Não foi possível concluir o login com Google.");
+      surfacedError.current = true;
+    }
+  }, [searchParams]);
 
   async function onSubmit(values: Schema) {
     setPending(true);
@@ -43,7 +56,9 @@ export function LoginForm() {
       setPending(false);
       return;
     }
-    router.push("/");
+    toast.success("Bem-vindo de volta!");
+    const next = safeNext(searchParams.get("next"), "/dashboard");
+    router.push(next);
     router.refresh();
   }
 
@@ -75,7 +90,7 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Senha</FormLabel>
               <FormControl>
-                <Input type="password" autoComplete="current-password" {...field} />
+                <PasswordInput autoComplete="current-password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

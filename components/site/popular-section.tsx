@@ -3,12 +3,11 @@ import { Flame } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { EventCard } from "@/components/site/event-card";
-import { mockEvents } from "@/lib/mock-events";
+import { popularEvents } from "@/lib/data/public-events";
 
-export function PopularSection() {
-  const popular = [...mockEvents]
-    .sort((a, b) => b.buyersLast24h - a.buyersLast24h)
-    .slice(0, 4);
+export async function PopularSection() {
+  const events = await popularEvents(4);
+  if (events.length === 0) return null;
 
   return (
     <section className="mx-auto w-full max-w-6xl space-y-6 px-4 py-12 sm:py-16">
@@ -36,12 +35,14 @@ export function PopularSection() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {popular.map((event) => (
+        {events.map((event) => (
           <div key={event.id} className="relative">
             <EventCard event={event} />
-            <div className="pointer-events-none absolute top-3 right-3 rounded-full bg-background/95 px-2 py-1 text-[11px] font-medium shadow-sm backdrop-blur">
-              {event.buyersLast24h} compras
-            </div>
+            {event.buyers_24h > 0 ? (
+              <div className="pointer-events-none absolute top-3 right-3 rounded-full bg-background/95 px-2 py-1 text-[11px] font-medium shadow-sm backdrop-blur">
+                {event.buyers_24h} compras
+              </div>
+            ) : null}
           </div>
         ))}
       </div>

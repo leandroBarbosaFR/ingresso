@@ -19,7 +19,11 @@ export type TicketEmailProps = {
   venueName: string;
   venueAddress: string;
   ticketTypeName: string;
-  qrDataUrl: string; // data: URL produced by qrcode.toDataURL
+  /**
+   * Hosted absolute URL of the QR PNG (e.g. https://app.example.com/api/qr/<uuid>).
+   * Do NOT pass a data: URI — most email clients strip them.
+   */
+  qrImageUrl: string;
   ticketUrl: string;
   orderId: string;
 };
@@ -129,7 +133,7 @@ export function TicketEmail({
   venueName,
   venueAddress,
   ticketTypeName,
-  qrDataUrl,
+  qrImageUrl,
   ticketUrl,
   orderId,
 }: TicketEmailProps) {
@@ -147,7 +151,7 @@ export function TicketEmail({
           <Section style={ticketCard}>
             <div style={qrWrap}>
               <Img
-                src={qrDataUrl}
+                src={qrImageUrl}
                 alt="QR code do ingresso"
                 style={qrImage}
                 width={180}

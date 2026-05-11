@@ -1,5 +1,4 @@
 import { Resend } from "resend";
-import QRCode from "qrcode";
 
 import { TicketEmail, type TicketEmailProps } from "../../emails/ticket-email";
 
@@ -15,18 +14,22 @@ function getResend() {
   return resendClient;
 }
 
-type SendTicketArgs = Omit<TicketEmailProps, "qrDataUrl"> & {
+type SendTicketArgs = Omit<TicketEmailProps, "qrImageUrl"> & {
   to: string;
-  /** What goes inside the QR — usually the qr_token or a check-in URL */
-  qrPayload: string;
+  /**
+   * The `tickets.qr_token` uuid. Drives both the QR payload and the path
+   * segment of the hosted PNG served at /api/qr/[token].
+   */
+  qrToken: string;
 };
 
+/**
+ * Sends one ticket per call. The QR is fetched from a real URL (not inlined
+ * as a `data:` URI) because Gmail mobile / iOS Mail / Outlook strip those.
+ */
 export async function sendTicketEmail(args: SendTicketArgs) {
-  const qrDataUrl = await QRCode.toDataURL(args.qrPayload, {
-    margin: 1,
-    width: 480,
-    errorCorrectionLevel: "M",
-  });
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const qrImageUrl = `${appUrl}/api/qr/${args.qrToken}`;
 
   const from = process.env.RESEND_FROM ?? "Ingressos <onboarding@resend.dev>";
 
@@ -34,7 +37,7 @@ export async function sendTicketEmail(args: SendTicketArgs) {
     from,
     to: args.to,
     subject: `Seu ingresso · ${args.eventTitle}`,
-    react: TicketEmail({ ...args, qrDataUrl }),
+    react: TicketEmail({ ...args, qrImageUrl }),
   });
 
   return result;

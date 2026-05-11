@@ -9,10 +9,12 @@ import {
   QrCode,
   Receipt,
   Settings,
+  Shield,
   Users,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import type { UserRole } from "@/lib/data/user";
 
 const items = [
   { href: "/dashboard", label: "Visão geral", icon: Home },
@@ -24,14 +26,14 @@ const items = [
   { href: "/dashboard/config", label: "Configurações", icon: Settings },
 ];
 
-export function DashboardSidebar() {
+export function DashboardSidebar({ role }: { role?: UserRole }) {
   const pathname = usePathname();
 
   return (
     <aside className="hidden w-60 shrink-0 border-r border-border bg-card/30 md:flex md:flex-col">
       <div className="flex h-14 items-center px-4">
         <Link href="/" className="font-semibold tracking-tight">
-          Ingressos
+          Ingressos&nbsp;<span className="text-[#ff6900]">+</span>
         </Link>
       </div>
       <nav className="flex-1 space-y-0.5 px-2 py-2">
@@ -57,8 +59,19 @@ export function DashboardSidebar() {
           );
         })}
       </nav>
+      {role === "super_admin" ? (
+        <Link
+          href="/admin"
+          className="mx-2 mb-2 flex items-center gap-2.5 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+        >
+          <Shield className="h-4 w-4" />
+          Painel super admin
+        </Link>
+      ) : null}
       <div className="border-t border-border p-3 text-xs text-muted-foreground">
-        Painel do produtor
+        {role === "super_admin"
+          ? "Painel do produtor"
+          : "Painel do produtor"}
       </div>
     </aside>
   );

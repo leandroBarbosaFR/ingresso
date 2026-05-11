@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { createClient } from "@/lib/supabase/client";
 
 const schema = z.object({
@@ -48,12 +49,15 @@ export function SignupForm() {
     setPending(false);
     if (error) {
       toast.error(
-        error.message === "User already registered"
+        /already registered|already exists|already been registered/i.test(
+          error.message
+        )
           ? "Este e-mail já está cadastrado."
           : "Não foi possível criar a conta."
       );
       return;
     }
+    toast.success("Conta criada. Confira seu e-mail para confirmar.");
     setDone(true);
   }
 
@@ -107,7 +111,7 @@ export function SignupForm() {
             <FormItem>
               <FormLabel>Senha</FormLabel>
               <FormControl>
-                <Input type="password" autoComplete="new-password" {...field} />
+                <PasswordInput autoComplete="new-password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

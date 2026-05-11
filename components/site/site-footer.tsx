@@ -5,7 +5,7 @@ export function SiteFooter() {
     <footer className="mt-16 border-t border-border bg-card/30">
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 md:grid-cols-4">
         <div className="space-y-3">
-          <span className="font-semibold tracking-tight">Ingressos</span>
+          <span className="font-semibold tracking-tight">Ingressos&nbsp;<span className="text-[#ff6900]">+</span></span>
           <p className="text-sm text-muted-foreground">
             A plataforma brasileira de venda de ingressos com taxas justas para
             produtores e compradores.
@@ -42,7 +42,7 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
-              <Link href="/precos" className="hover:text-foreground">
+              <Link href="/produtores#precos" className="hover:text-foreground">
                 Taxas
               </Link>
             </li>
@@ -70,6 +70,11 @@ export function SiteFooter() {
             <li>
               <Link href="/reembolso" className="hover:text-foreground">
                 Reembolso
+              </Link>
+            </li>
+            <li>
+              <Link href="/sobre" className="hover:text-foreground">
+                Sobre
               </Link>
             </li>
           </ul>

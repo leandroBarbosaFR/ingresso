@@ -1,10 +1,13 @@
+import Link from "next/link";
 import {
   CalendarDays,
+  Plus,
   Receipt,
   TicketCheck,
   TrendingUp,
 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -12,52 +15,60 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { requireOrganizer } from "@/lib/data/organizer";
+import { organizerStats, upcomingEvents } from "@/lib/data/events";
+import { brl, dateShort } from "@/lib/format";
 
-const stats = [
-  {
-    label: "Receita (30 dias)",
-    value: "R$ 12.450,00",
-    delta: "+18%",
-    icon: TrendingUp,
-  },
-  {
-    label: "Ingressos vendidos",
-    value: "284",
-    delta: "+24",
-    icon: Receipt,
-  },
-  {
-    label: "Eventos ativos",
-    value: "3",
-    delta: "1 esta semana",
-    icon: CalendarDays,
-  },
-  {
-    label: "Taxa de check-in",
-    value: "92%",
-    delta: "Ótimo",
-    icon: TicketCheck,
-  },
-];
+export default async function DashboardPage() {
+  const { organizer } = await requireOrganizer();
+  const [stats, upcoming] = await Promise.all([
+    organizerStats(organizer.id),
+    upcomingEvents(organizer.id, 5),
+  ]);
 
-const upcomingEvents = [
-  { title: "Show de Jazz na Praia", date: "12 mai · 20h", sold: 124, total: 200 },
-  { title: "Workshop de Fotografia", date: "18 mai · 14h", sold: 18, total: 25 },
-  { title: "Festa Rooftop Verão", date: "26 mai · 22h", sold: 287, total: 400 },
-];
+  const cards = [
+    {
+      label: "Receita (30 dias)",
+      value: brl(stats.revenueCents),
+      icon: TrendingUp,
+    },
+    {
+      label: "Ingressos vendidos",
+      value: stats.ticketsSold.toString(),
+      icon: Receipt,
+    },
+    {
+      label: "Eventos publicados",
+      value: stats.activeEvents.toString(),
+      icon: CalendarDays,
+    },
+    {
+      label: "Taxa de check-in",
+      value: `${stats.checkInRate}%`,
+      icon: TicketCheck,
+    },
+  ];
 
-export default function DashboardPage() {
   return (
     <div className="space-y-6 p-4 sm:p-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Visão geral</h1>
-        <p className="text-sm text-muted-foreground">
-          Acompanhe vendas, eventos e check-ins dos seus eventos.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Olá, {organizer.name}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Acompanhe vendas, eventos e check-ins.
+          </p>
+        </div>
+        <Link href="/dashboard/eventos/novo">
+          <Button>
+            <Plus className="h-4 w-4" /> Novo evento
+          </Button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => {
+        {cards.map((stat) => {
           const Icon = stat.icon;
           return (
             <Card key={stat.label}>
@@ -66,12 +77,9 @@ export default function DashboardPage() {
                 <Icon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-semibold tracking-tight">
+                <div className="text-2xl font-semibold tracking-tight tabular-nums">
                   {stat.value}
                 </div>
-                <p className="pt-1 text-xs text-muted-foreground">
-                  {stat.delta}
-                </p>
               </CardContent>
             </Card>
           );
@@ -86,33 +94,56 @@ export default function DashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="divide-y divide-border">
-          {upcomingEvents.map((evt) => {
-            const pct = Math.round((evt.sold / evt.total) * 100);
-            return (
-              <div
-                key={evt.title}
-                className="flex items-center gap-4 py-3 first:pt-0 last:pb-0"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{evt.title}</p>
-                  <p className="text-xs text-muted-foreground">{evt.date}</p>
-                </div>
-                <div className="hidden w-40 sm:block">
-                  <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full bg-foreground"
-                      style={{ width: `${pct}%` }}
-                    />
+          {upcoming.length === 0 ? (
+            <EmptyEvents />
+          ) : (
+            upcoming.map((evt) => {
+              const pct =
+                evt.total === 0 ? 0 : Math.round((evt.sold / evt.total) * 100);
+              return (
+                <Link
+                  key={evt.id}
+                  href={`/dashboard/eventos/${evt.id}`}
+                  className="flex items-center gap-4 py-3 transition-colors first:pt-0 last:pb-0 hover:bg-muted/40"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{evt.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {dateShort(evt.starts_at)}
+                    </p>
                   </div>
-                </div>
-                <div className="w-24 shrink-0 text-right text-sm tabular-nums">
-                  {evt.sold} / {evt.total}
-                </div>
-              </div>
-            );
-          })}
+                  <div className="hidden w-40 sm:block">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full bg-foreground"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="w-24 shrink-0 text-right text-sm tabular-nums">
+                    {evt.sold} / {evt.total}
+                  </div>
+                </Link>
+              );
+            })
+          )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function EmptyEvents() {
+  return (
+    <div className="flex flex-col items-center gap-3 py-10 text-center">
+      <p className="text-sm text-muted-foreground">
+        Você ainda não tem eventos publicados.
+      </p>
+      <Link href="/dashboard/eventos/novo">
+        <Button size="sm">
+          <Plus className="h-4 w-4" /> Criar primeiro evento
+        </Button>
+      </Link>
     </div>
   );
 }
