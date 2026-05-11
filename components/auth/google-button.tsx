@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { safeNext } from "@/lib/auth/safe-redirect";
 import { createClient } from "@/lib/supabase/client";
 
 function GoogleIcon({ className }: { className?: string }) {
@@ -30,6 +31,7 @@ function GoogleIcon({ className }: { className?: string }) {
 }
 
 type Props = {
+  /** Override the post-login destination. Defaults to ?next= on the URL or /dashboard. */
   redirectTo?: string;
 };
 
@@ -38,13 +40,15 @@ export function GoogleButton({ redirectTo }: Props) {
 
   async function signIn() {
     setPending(true);
+    // Resolve where to land after auth — explicit prop > current ?next= > /dashboard.
+    // Always send a `next` so the callback route never has to guess.
+    const urlNext = new URLSearchParams(window.location.search).get("next");
+    const next = safeNext(redirectTo ?? urlNext, "/dashboard");
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback${
-          redirectTo ? `?next=${encodeURIComponent(redirectTo)}` : ""
-        }`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
     if (error) {
