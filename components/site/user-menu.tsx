@@ -34,21 +34,25 @@ export function UserMenu({ email, panelHref }: Props) {
           <button
             type="button"
             aria-label="Conta"
-            className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-muted/40 px-1.5 pr-3 text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-          />
+            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full border border-border bg-muted/40 px-1.5 pr-3 text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+          >
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-[11px] font-semibold text-background">
+              {initialsFor(email)}
+            </span>
+            <span className="hidden max-w-[160px] truncate text-xs text-muted-foreground lg:inline">
+              {email}
+            </span>
+          </button>
         }
-      >
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-[11px] font-semibold text-background">
-          {initialsFor(email)}
-        </span>
-        <span className="hidden max-w-[140px] truncate text-xs text-muted-foreground sm:inline">
-          {email}
-        </span>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-56">
+      />
+      <DropdownMenuContent align="end" className="min-w-60">
         <DropdownMenuLabel className="space-y-0.5">
-          <p className="text-xs font-medium text-muted-foreground">Logado como</p>
-          <p className="truncate text-sm font-medium text-foreground">{email}</p>
+          <p className="text-xs font-medium text-muted-foreground">
+            Logado como
+          </p>
+          <p className="truncate text-sm font-medium text-foreground">
+            {email}
+          </p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem
