@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { LayoutDashboard, LogOut, User } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,66 +27,81 @@ function initialsFor(email: string) {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
+// Static id so the hidden signout form can be targeted from anywhere
+// without prop drilling.
+const SIGNOUT_FORM_ID = "user-menu-signout-form";
+
 export function UserMenu({ email, panelHref }: Props) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <button
-            type="button"
-            aria-label="Conta"
-            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full border border-border bg-muted/40 px-1.5 pr-3 text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-          >
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-[11px] font-semibold text-background">
-              {initialsFor(email)}
-            </span>
-            <span className="hidden max-w-[160px] truncate text-xs text-muted-foreground lg:inline">
-              {email}
-            </span>
-          </button>
-        }
+    <>
+      {/* The form lives outside the menu so the menu-item button can submit it
+          via the `form` attribute without nesting interactive elements. */}
+      <form
+        id={SIGNOUT_FORM_ID}
+        action="/auth/sign-out"
+        method="post"
+        className="hidden"
       />
-      <DropdownMenuContent align="end" className="min-w-60">
-        <DropdownMenuLabel className="space-y-0.5">
-          <p className="text-xs font-medium text-muted-foreground">
-            Logado como
-          </p>
-          <p className="truncate text-sm font-medium text-foreground">
-            {email}
-          </p>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
+
+      <DropdownMenu>
+        <DropdownMenuTrigger
           render={
-            <Link href={panelHref}>
-              <LayoutDashboard className="h-4 w-4" />
-              Meu painel
-            </Link>
+            <Button
+              variant="outline"
+              aria-label="Conta"
+              className="rounded-full gap-2 pl-1.5 pr-3"
+            >
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-foreground text-[11px] font-semibold text-background">
+                {initialsFor(email)}
+              </span>
+              <span className="hidden max-w-[160px] truncate text-xs font-normal text-muted-foreground lg:inline">
+                {email}
+              </span>
+            </Button>
           }
         />
-        <DropdownMenuItem
-          render={
-            <Link href="/dashboard/config">
-              <User className="h-4 w-4" />
-              Minha conta
-            </Link>
-          }
-        />
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          render={
-            <form action="/auth/sign-out" method="post" className="w-full">
+
+        <DropdownMenuContent align="end" className="min-w-60">
+          <DropdownMenuLabel className="space-y-0.5">
+            <p className="text-xs font-medium text-muted-foreground">
+              Logado como
+            </p>
+            <p className="truncate text-sm font-medium text-foreground">
+              {email}
+            </p>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            render={
+              <Link href={panelHref}>
+                <LayoutDashboard className="h-4 w-4" />
+                Meu painel
+              </Link>
+            }
+          />
+          <DropdownMenuItem
+            render={
+              <Link href="/dashboard/config">
+                <User className="h-4 w-4" />
+                Minha conta
+              </Link>
+            }
+          />
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            render={
               <button
                 type="submit"
-                className="flex w-full items-center gap-2 text-destructive"
+                form={SIGNOUT_FORM_ID}
+                className="text-destructive"
               >
                 <LogOut className="h-4 w-4" />
                 Sair
               </button>
-            </form>
-          }
-        />
-      </DropdownMenuContent>
-    </DropdownMenu>
+            }
+          />
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
   );
 }

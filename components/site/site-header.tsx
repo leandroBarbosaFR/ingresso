@@ -16,12 +16,16 @@ export async function SiteHeader() {
 
   let panelHref = "/dashboard";
   if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle();
-    if (profile?.role) panelHref = homeForRole(profile.role as UserRole);
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (profile?.role) panelHref = homeForRole(profile.role as UserRole);
+    } catch {
+      // never block the header on a profile read — fall back to /dashboard.
+    }
   }
   const userInfo = user
     ? { email: user.email ?? "", panelHref }
